@@ -40,5 +40,53 @@ func render(_ symbol: String, to path: String) {
     try! out.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: path))
 }
 
+// App icon on Apple's 1024 grid: 824pt rounded square, blue gradient, white glyph.
+func appIcon(_ px: Int) -> Data {
+    let rep = bitmap(px)
+    draw(into: rep) {
+        let s = CGFloat(px) / 1024
+        let tile = NSRect(x: 100 * s, y: 100 * s, width: 824 * s, height: 824 * s)
+        let path = NSBezierPath(roundedRect: tile, xRadius: 185 * s, yRadius: 185 * s)
+        NSGraphicsContext.saveGraphicsState()
+        let shadow = NSShadow()
+        shadow.shadowColor = NSColor(white: 0, alpha: 0.3)
+        shadow.shadowOffset = NSSize(width: 0, height: -10 * s)
+        shadow.shadowBlurRadius = 20 * s
+        shadow.set()
+        NSColor.black.setFill()
+        path.fill()
+        NSGraphicsContext.restoreGraphicsState()
+        NSGradient(starting: NSColor(srgbRed: 0.33, green: 0.55, blue: 1.0, alpha: 1),
+                   ending: NSColor(srgbRed: 0.10, green: 0.18, blue: 0.55, alpha: 1))!
+            .draw(in: path, angle: -90)
+
+        let config = NSImage.SymbolConfiguration(pointSize: 420 * s, weight: .semibold)
+            .applying(.init(paletteColors: [.white]))
+        let glyph = NSImage(systemSymbolName: "antenna.radiowaves.left.and.right", accessibilityDescription: nil)!
+            .withSymbolConfiguration(config)!
+        let g = glyph.size
+        glyph.draw(in: NSRect(x: (CGFloat(px) - g.width) / 2, y: (CGFloat(px) - g.height) / 2,
+                              width: g.width, height: g.height))
+    }
+    return rep.representation(using: .png, properties: [:])!
+}
+
+func makeIcns(to path: String) {
+    let set = NSTemporaryDirectory() + "AppIcon.iconset"
+    try? FileManager.default.removeItem(atPath: set)
+    try! FileManager.default.createDirectory(atPath: set, withIntermediateDirectories: true)
+    for pt in [16, 32, 128, 256, 512] {
+        try! appIcon(pt).write(to: URL(fileURLWithPath: "\(set)/icon_\(pt)x\(pt).png"))
+        try! appIcon(pt * 2).write(to: URL(fileURLWithPath: "\(set)/icon_\(pt)x\(pt)@2x.png"))
+    }
+    let p = Process()
+    p.executableURL = URL(fileURLWithPath: "/usr/bin/iconutil")
+    p.arguments = ["-c", "icns", set, "-o", path]
+    try! p.run()
+    p.waitUntilExit()
+    precondition(p.terminationStatus == 0, "iconutil failed")
+}
+
 let dir = URL(fileURLWithPath: #filePath).deletingLastPathComponent().path
 render("antenna.radiowaves.left.and.right", to: "\(dir)/icon.png")
+makeIcns(to: "\(dir)/AppIcon.icns")

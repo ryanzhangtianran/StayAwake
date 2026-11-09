@@ -5,7 +5,8 @@ cd "$(dirname "$0")"
 
 APP=StayAwake.app
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+cp icons/AppIcon.icns "$APP/Contents/Resources/"
 
 export CGO_ENABLED=1 MACOSX_DEPLOYMENT_TARGET=13.0
 export CGO_CFLAGS=-mmacosx-version-min=13.0 CGO_LDFLAGS=-mmacosx-version-min=13.0
@@ -21,6 +22,7 @@ cat > "$APP/Contents/Info.plist" <<'EOF'
 <dict>
 	<key>CFBundleName</key><string>StayAwake</string>
 	<key>CFBundleIdentifier</key><string>com.ryanzhangtianran.StayAwake</string>
+	<key>CFBundleIconFile</key><string>AppIcon</string>
 	<key>CFBundleExecutable</key><string>StayAwake</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
 	<key>CFBundleShortVersionString</key><string>1.0.0</string>

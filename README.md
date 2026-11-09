@@ -22,5 +22,5 @@ macOS 菜单栏小工具：运行期间防止 Mac 睡眠，显示器照常熄灭
 ```sh
 ./build.sh          # 生成 StayAwake.app
 open StayAwake.app
-swift icons/make-icons.swift   # 修改图标后重新生成 icons/icon.png
+swift icons/make-icons.swift   # 修改图标后重新生成 icons/icon.png 和 icons/AppIcon.icns
 ```
